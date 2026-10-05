@@ -1,5 +1,8 @@
 -- MenuAtPointer
--- Show the frontmost macOS application's main menu at the mouse pointer.
+-- Show a macOS application's main menu at the mouse pointer.
+--
+-- If the pointer is over an inactive window, that window is focused first
+-- and its application's menu is shown immediately.
 --
 -- Default trigger: Option + left-click
 -- Requires Hammerspoon and Accessibility permission.
@@ -93,9 +96,26 @@ local function buildMenu(nodes, path, app)
     return result
 end
 
-local function showMenuAtPointer(point)
-    local app = hs.application.frontmostApplication()
+-- Return the topmost standard window underneath a screen point.
+local function windowUnderPoint(point)
+    for _, win in ipairs(hs.window.orderedWindows()) do
+        if win:isStandard() then
+            local frame = win:frame()
 
+            if point.x >= frame.x
+                and point.x <= frame.x + frame.w
+                and point.y >= frame.y
+                and point.y <= frame.y + frame.h then
+
+                return win
+            end
+        end
+    end
+
+    return nil
+end
+
+local function showMenuForApp(app, point)
     if not app then
         return
     end
@@ -128,9 +148,25 @@ MenuAtPointerEventTap = hs.eventtap.new({
         return false
     end
 
-    -- Option + left-click (by default) opens the application menu.
     if event:getType() == hs.eventtap.event.types.leftMouseDown then
-        showMenuAtPointer(hs.mouse.absolutePosition())
+        local point = hs.mouse.absolutePosition()
+        local win = windowUnderPoint(point)
+
+        if win then
+            local app = win:application()
+
+            -- Focus the window under the pointer first. A short delay gives
+            -- macOS time to update the active application's menu hierarchy.
+            win:focus()
+
+            hs.timer.doAfter(0.05, function()
+                showMenuForApp(app, point)
+            end)
+        else
+            -- If the pointer is not over a standard window, fall back to the
+            -- application that is already active.
+            showMenuForApp(hs.application.frontmostApplication(), point)
+        end
     end
 
     -- Swallow the triggering click so the underlying application does
