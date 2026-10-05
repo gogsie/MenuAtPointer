@@ -1,12 +1,13 @@
 # MenuAtPointer
 
-Bring the current macOS application's main menu to your mouse pointer.
+Bring a macOS application's main menu to your mouse pointer.
 
 Instead of moving the pointer all the way to the menu bar every time you want **File**, **Edit**, **View**, **Window**, or another application menu, MenuAtPointer shows the same menu hierarchy wherever the pointer already is.
 
 By default:
 
-- **Option + left-click** opens the current application's menu at the pointer.
+- **Option + left-click** opens the application menu at the pointer.
+- If the pointer is over an inactive window, that window is focused first and its application's menu is shown immediately.
 - Normal left-click works normally.
 - Normal right-click still opens the application's usual context menu.
 
@@ -46,15 +47,17 @@ If you do not already have an `init.lua`, create one containing just that line.
 
 Choose **Reload Config** from the Hammerspoon menu-bar icon.
 
-Now **Option + left-click** anywhere in an application to open its main menu at the pointer.
+Now **Option + left-click** over any application window to focus that window and open its main menu at the pointer in one action.
 
 ## What it does
 
-MenuAtPointer reads the active application's real menu structure using macOS Accessibility, rebuilds it as a popup menu, and invokes the application's original menu command when you choose an item.
+MenuAtPointer reads the target application's real menu structure using macOS Accessibility, rebuilds it as a popup menu, and invokes the application's original menu command when you choose an item.
 
 That means application-specific menus are included automatically. For example, Safari can show Safari, File, Edit, View, History, Bookmarks, Window and Help, while another app will show its own menu set.
 
 The application's own menu is included at the top, so items such as **Settings…**, **About**, **Hide** and **Quit** remain available.
+
+If the pointer is over a different, inactive window, MenuAtPointer focuses that window first. This avoids the usual extra click just to activate the application before using its menus.
 
 ## Changing the trigger
 
@@ -86,7 +89,7 @@ Note that macOS normally uses Control-click as an alternative to right-click, so
 
 - MenuAtPointer requires Hammerspoon to be running.
 - Some applications may expose parts of their menus differently through Accessibility.
-- Menu contents are read from the frontmost application each time, so dynamic and application-specific menu items are preserved.
+- Menu contents are read from the target application each time, so dynamic and application-specific menu items are preserved.
 - Normal macOS right-click behaviour is untouched.
 
 ## Licence
